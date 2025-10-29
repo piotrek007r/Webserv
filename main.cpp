@@ -1,8 +1,12 @@
 #include <iostream>
-#include <sys/socket.h>
+#include <string>
+#include <sys/socket.h>   // for sockets
 #include <stdint.h>
 #include <arpa/inet.h>    // inet_pton, inet_ntop
 #include <netinet/in.h>   // struct sockaddr_in, struct in_addr
+#include <cerrno>         // defines errno
+#include <cstring>        // defines strerror()
+// #include <sstream>
 
 int main()
 {
@@ -22,9 +26,9 @@ int main()
 
     */
 
-   in_addr in_addr;
+   in_addr server_ip;
    
-   int status = inet_pton(AF_INET, "192.168.8.104", &in_addr);
+   int status = inet_pton(AF_INET, "192.168.8.104", &server_ip);
    switch (status)
     {
         case 0:
@@ -49,35 +53,69 @@ int main()
     Usually 0 for standard socktype but for SOCK_RAW there is IPPROTO_ICMP 
     */
        
-       // opening a FD for socket of given 2 params 
-       int socketFd = socket(AF_INET, SOCK_STREAM, 0);
-       
-       std::cout << "Socket FD: " << socketFd << std::endl; 
-       
-       sockaddr sockaddr;
-       sockaddr_in sockaddr_in {};
-       sockaddr_in.sin_family = AF_INET;
-       sockaddr_in.sin_port = htons(8080);
-       sockaddr_in.sin_addr = in_addr;
-       
-       // binding socker FD to IP+port stored in sockaddr_in, similar FD <-> pipe end;
-       int statusBind = bind(socketFd, (struct sockaddr*)&sockaddr_in, sizeof(sockaddr_in));
-       if(statusBind == -1)
-       {
-           std::cerr << "Error: Failed to bind socket" << std::endl;
-           return 0;
-        }
-        
-        int statusLis = listen(socketFd, 5);
-        if(statusLis == -1)
-        {
-            std::cerr << "Error: ..." << std::endl;
-            return 0;
-        }
-        // getsockname() // testing
-    while(true)
+    // opening a FD for socket of given 2 params 
+    int socketFd = socket(AF_INET, SOCK_STREAM, 0);
+    
+    std::cout << "Socket FD: " << socketFd << std::endl; 
+    
+    // sockaddr sockaddr;
+    sockaddr_in servSockaddr_in; // <- server struct 
+    memset(&servSockaddr_in, 0, sizeof(sockaddr_in));
+    sockaddr_storage clientSockaddr;
+    memset(&clientSockaddr, 0, sizeof(sockaddr_in));
+    servSockaddr_in.sin_family = AF_INET;
+    servSockaddr_in.sin_port = htons(8080);
+    servSockaddr_in.sin_addr = server_ip;
+    
+    /*
+    binding socker FD to IP+port stored in sockaddr_in, similar FD <-> pipe end;
+    casting to defoult struct sockaddr that can work with any kind of those structs
+    */
+    int statusBind = bind(socketFd, (struct sockaddr*)&servSockaddr_in, sizeof(servSockaddr_in));
+    if(statusBind == -1)
     {
+        std::cerr << "bind() failed: " << strerror(errno) << std::endl;
+        return 0;
     }
+    // last param for listen in number of connection allowed on the incoming queue
+    int statusLis = listen(socketFd, 5);
+    if(statusLis == -1)
+    {
+        std::cerr << "listen() failed: " << strerror(errno) << std::endl;
+        return 0;
+    }
+    std::cout << "accept connection: " << std::endl;
+    /*
+    addrlen is set in front and it can change due to different sockaddr struct,
+    Kernel need to know how big struct gonna be;
+    */
+    socklen_t addrLen = sizeof(sockaddr_storage);
+    int clientFD = accept(socketFd, (struct sockaddr*)&clientSockaddr, &addrLen);
+    if(clientFD == -1)
+    {
+        std::cerr << "accept() failed: " << strerror(errno) << std::endl;
+        return 0;
+    }
+    std::string str = "Hello this is server talking to U!\n";
+    int byteSend = send(clientFD, str.c_str(), str.size(), 0); // check if string functions are ok 
+    if(byteSend == -1)
+    {
+        std::cerr << "send() failed: " << strerror(errno) << std::endl;
+        return 0;
+    }
+    char buffer[1024];
+    // std::istringstream iss;
+    int byteRecived = recv(clientFD, &buffer, 1024, 0);
+    if(byteRecived == -1)
+    {
+        std::cerr << "send() failed: " << strerror(errno) << std::endl;
+        return 0;
+    }
+    std::cout << buffer << std::endl;
+        // getsockname() // testing
+    // while(true)
+    // {
+    // }
 }
 
 /*
