@@ -6,6 +6,7 @@
 #include <netinet/in.h>   // struct sockaddr_in, struct in_addr
 #include <cerrno>         // defines errno
 #include <cstring>        // defines strerror()
+#include <unistd.h>       // for close read write
 // #include <sstream>
 
 int main()
@@ -28,15 +29,15 @@ int main()
 
    in_addr server_ip;
    
-   int status = inet_pton(AF_INET, "192.168.8.104", &server_ip);
+   int status = inet_pton(AF_INET, "0.0.0.0", &server_ip);
    switch (status)
     {
         case 0:
         std::cerr << "Error: invalid IP string" << std::endl;
-        return 0;
+        return 1;
         case -1:
         std::cerr << "Error: invalid address family" << std::endl;
-        return 0;
+        return 1;
         default:
         break;
     }
@@ -67,6 +68,9 @@ int main()
     servSockaddr_in.sin_port = htons(8080);
     servSockaddr_in.sin_addr = server_ip;
     
+    int option = 1;
+    // reles soket from kernel hold, allow to multile use after close
+    setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
     /*
     binding socker FD to IP+port stored in sockaddr_in, similar FD <-> pipe end;
     casting to defoult struct sockaddr that can work with any kind of those structs
@@ -75,14 +79,14 @@ int main()
     if(statusBind == -1)
     {
         std::cerr << "bind() failed: " << strerror(errno) << std::endl;
-        return 0;
+        return 1;
     }
     // last param for listen in number of connection allowed on the incoming queue
     int statusLis = listen(socketFd, 5);
     if(statusLis == -1)
     {
         std::cerr << "listen() failed: " << strerror(errno) << std::endl;
-        return 0;
+        return 1;
     }
     std::cout << "accept connection: " << std::endl;
     /*
@@ -94,28 +98,39 @@ int main()
     if(clientFD == -1)
     {
         std::cerr << "accept() failed: " << strerror(errno) << std::endl;
-        return 0;
+        return 1;
     }
     std::string str = "Hello this is server talking to U!\n";
     int byteSend = send(clientFD, str.c_str(), str.size(), 0); // check if string functions are ok 
     if(byteSend == -1)
     {
         std::cerr << "send() failed: " << strerror(errno) << std::endl;
-        return 0;
+        return 1;
     }
     char buffer[1024];
     // std::istringstream iss;
-    int byteRecived = recv(clientFD, &buffer, 1024, 0);
-    if(byteRecived == -1)
+    int byteRecived;
+    while(true)
     {
-        std::cerr << "send() failed: " << strerror(errno) << std::endl;
-        return 0;
+        byteRecived = recv(clientFD, &buffer, 1024, 0);
+        buffer[byteRecived] = '\0'; // -2 coz telnet send additional /r+/n while confirm 
+        if(byteRecived == -1)
+        {
+            std::cerr << "send() failed: " << strerror(errno) << std::endl;
+            return 1;
+        }
+        else if (byteRecived == 0)
+            break;
+        std::cout << byteRecived << std::endl;
+        std::cout << buffer << std::endl;
     }
-    std::cout << buffer << std::endl;
+    close(socketFd);
+    close(clientFD);
         // getsockname() // testing
     // while(true)
     // {
     // }
+    return 0;
 }
 
 /*
