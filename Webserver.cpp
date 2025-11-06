@@ -1,6 +1,6 @@
 #include "Webserver.hpp"
 
-Webserver::Webserver() : serv(NULL), pollFDs(NULL), pollFDsNum(0), poolTimeout(2500)
+Webserver::Webserver() : serv(NULL), pollFDs(NULL), pollFDsNum(0), poolTimeout(1000)
 {
    memset(&clientSockaddr, 0, sizeof(sockaddr_in));
    memset(&hints, 0, sizeof(sockaddr_in));
@@ -48,9 +48,11 @@ void Webserver::tempLogic()
          std::cerr << "listen() failed: " << strerror(errno) << std::endl;
          exit(1);
       }
-
+      isListenFD.push_back(true);
+      pollFDs = (pollfd *)realloc(pollFDs, (i + 1) * sizeof(pollfd));
       pollFDs[i].fd = socketFD[i];
       pollFDs[i].events = POLLIN;
+      pollFDsNum++;
       i++;
       if (serv->ai_next == NULL)
          break;
@@ -58,22 +60,55 @@ void Webserver::tempLogic()
    }
 
    /*
-   Plan is to first set poll to recive by setiing every event to POLLIN. 
+   Plan is to first set poll to recive by setiing every event to POLLIN.
    Later when logic works implement for sending with such optimization:
-   - ready to send -> find corresponding socket with pollFD struct 
+   - ready to send -> find corresponding socket with pollFD struct
       -> change its event to POLLOUT -> send -> remove POLLOUT from event
    */
 
-   while(true)
-   {
-      for(int i = 0; i < pollFDsNum; i++)
-      {
 
-         poll(pollFDs, pollFDsNum, poolTimeout);
+   while (true)
+   {
+      int pollstatus = poll(pollFDs, pollFDsNum, poolTimeout);
+      if (pollstatus > 0)
+      {
+         for (int i = 0; i < pollFDsNum; i++)
+         {
+            if ((pollFDs[i].revents & POLLIN) && isListenFD[i])
+            {
+               isListenFD[i] = false; 
+               pollFDs[i].events = POLLOUT;
+               // set new flag to recv and send
+               // accept connection
+               std::cout << "socket: " << pollFDs[i].fd << " ready to connect" << std::endl;
+            }
+            else if (pollFDs[i].revents & POLLIN)
+            {
+               std::cout << "client: " << pollFDs[i].fd << " ready to recv" << std::endl;
+            }
+            std::cout << "--" << pollFDs[i].revents << std::endl;
+            if (pollFDs[i].revents & POLLOUT)
+            {
+               std::cout << "client: " << pollFDs[i].fd << " ready to send" << std::endl;
+            }
+            if (pollFDs[i].revents & POLLHUP)
+            {
+               std::cout << "client on FD: " << pollFDs[i].fd << std::endl;
+               // close this client client
+            }
+            if (pollFDs[i].revents & POLLERR)
+            {
+               std::cout << "poll() failed: revent return POLLERR" << std::endl;
+               exit(1); // propably to remove
+            }
+         }
       }
+      usleep(1000000);
+      // std::cout << pollstatus << std::endl;
+      // std::cout << i << std::endl;
    }
 
-// --------> blocked connection test <----------
+   // --------> blocked connection test <----------
 
    // socklen_t addrLen = sizeof(sockaddr_storage);
    // int clientFD = accept(socketFD[0], (struct sockaddr *)&clientSockaddr, &addrLen);
