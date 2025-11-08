@@ -23,13 +23,21 @@ private:
     addrinfo *serv;
     sockaddr_storage clientSockaddr;
     std::vector<int> socketFD;
-    std::vector<bool> isListenFD;
+    std::vector<bool> isClientFD; // consider switching it to map
     pollfd *pollFDs;
-    int pollFDsNum;
+    size_t lSockNum; // number of listening sockets
     int poolTimeout;
+    size_t pollFDsNum; // number of structs corresponding total number of sockets
+    // temporary
+    char buffer[1024]; 
+    int byteRecived;
 
 public:
     Webserver();
+    void setSocket(size_t i);
+    void setConnection(size_t i);
+    void recivNClose(size_t i);
+    void sendToClient(size_t i);
     void tempLogic();
 };
 

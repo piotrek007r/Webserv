@@ -1,7 +1,8 @@
 NAME = Webserv
 
 SRCS = main.cpp \
-		Webserver.cpp
+		Webserver.cpp \
+		poll.cpp
 
 OBJS = ${SRCS:.cpp=.o}
 
