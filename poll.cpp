@@ -60,5 +60,5 @@ void Webserver::sendToClient(size_t el)
       exit(1);
    }
    pollFDs[el].events = POLLIN;
-   std::cout << "client: " << pollFDs[el].fd << " ready to send" << std::endl;
+   // std::cout << "client: " << pollFDs[el].fd << " ready to send" << std::endl;
 }

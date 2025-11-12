@@ -1,6 +1,7 @@
 #include "Webserver.hpp"
 
-Webserver::Webserver() : serv(NULL), pollFDs(NULL), lSockNum(0), poolTimeout(1000), pollFDsNum(0)
+Webserver::Webserver() : serv(NULL), pollFDs(NULL), lSockNum(0), poolTimeout(1000), 
+   pollFDsNum(0), bakclogNum(128)
 {
    memset(&clientSockaddr, 0, sizeof(sockaddr_in));
    memset(&hints, 0, sizeof(sockaddr_in));
@@ -11,6 +12,7 @@ Webserver::Webserver() : serv(NULL), pollFDs(NULL), lSockNum(0), poolTimeout(100
 
 void Webserver::setSocket(size_t i)
 {
+   // this is creation of listening sockets, pushing to vector
    socketFD.push_back(socket(serv->ai_family, SOCK_STREAM, 0)); // error check missing
    // release soket from kernel hold, allow to multile use after close
    int option = 1;
@@ -19,6 +21,7 @@ void Webserver::setSocket(size_t i)
       std::cerr << "setsockopt() failed: " << strerror(errno) << std::endl;
       exit(EXIT_FAILURE);
    }
+   // setting AF_INET6 wasnt specified in subect but i did it as a real world case scenario
    if (serv->ai_family == AF_INET6)
    {
       int yes = 1;
@@ -29,6 +32,7 @@ void Webserver::setSocket(size_t i)
          exit(EXIT_FAILURE);
       }
    }
+   // this function set sockets to be non-blocking, connection will not hold program from further execution
    fcntl(socketFD[i], F_SETFL, O_NONBLOCK);
    /*binding socket FD to IP+port stored in erv->ai_addr, similar FD <-> pipe end;
    casting to defoult struct sockaddr that can work with any kind of those structs*/
@@ -38,7 +42,7 @@ void Webserver::setSocket(size_t i)
       exit(EXIT_FAILURE);
    }
    // last param for listen in number of connection allowed on the incoming queue
-   if (listen(socketFD[i], 5) == -1)
+   if (listen(socketFD[i], 2) == -1)
    {
       std::cerr << "listen() failed: " << strerror(errno) << std::endl;
       exit(EXIT_FAILURE);
@@ -47,6 +51,7 @@ void Webserver::setSocket(size_t i)
 
 void Webserver::tempLogic()
 {
+   // this function will be adjusted to data provided after parsing config file
    getaddrinfo(NULL, "8080", &hints, &serv);
 
    size_t i = 0;
@@ -56,6 +61,7 @@ void Webserver::tempLogic()
       // creating a pararel vector to pollFD just to distiquish listening from client socket
       isClientFD.push_back(false);
       lSockNum++;
+      // realloc is nessesary due to dynamics changes to pollfd array, it holds all sockets events data 
       pollFDs = (pollfd *)realloc(pollFDs, (lSockNum + 1) * sizeof(pollfd));
       pollFDs[i].fd = socketFD[i];
       pollFDs[i].events = POLLIN;
@@ -74,20 +80,19 @@ void Webserver::tempLogic()
       {
          for (size_t i = 0; i < pollFDsNum; i++)
          {
-            std::cout << "pollFDs num: " << pollFDsNum << std::endl;
+            // std::cout << "pollFDs num: " << pollFDsNum << std::endl;
+            // only on listening sockets, after first request
             if ((pollFDs[i].revents & POLLIN) && (i < lSockNum) && !(isClientFD[i]))
                setConnection(i);
             else if (pollFDs[i].revents & POLLIN)
                recivNClose(i);
-            std::cout << "socket: " << pollFDs[i].fd << " revent: " << pollFDs[i].revents << std::endl;
+            // std::cout << "socket: " << pollFDs[i].fd << " revent: " << pollFDs[i].revents << std::endl;
             if (pollFDs[i].revents & POLLOUT)
                sendToClient(i);
             if (pollFDs[i].revents & POLLHUP) // consider it coz might be unnesesary.
             {
                std::cout << "client on FD: " << pollFDs[i].fd << " has disconnected" << std::endl;
                exit(EXIT_FAILURE);
-               // logic with shifting elements in array
-               // close this client client
             }
             if (pollFDs[i].revents & POLLERR)
             {

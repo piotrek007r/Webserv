@@ -9,28 +9,29 @@
 #include <netinet/in.h> // struct sockaddr_in, struct in_addr
 #include <netdb.h>      // for getaddrinfo and addrinfo
 #include <poll.h>       // for poolfd
-#include <string>
-#include <stdint.h>
+#include <string>   
+#include <stdint.h>     
 #include <stdlib.h>     // for exit
 #include <sys/socket.h> // for sockets
 #include <unistd.h>     // for close read write
-#include <vector>
+#include <vector>      
 
 class Webserver
 {
 private:
-    addrinfo hints;
-    addrinfo *serv;
-    sockaddr_storage clientSockaddr;
-    std::vector<int> socketFD;
+    addrinfo hints; // base config of server
+    addrinfo *serv; 
+    sockaddr_storage clientSockaddr; // information about client
+    std::vector<int> socketFD; // vector holding all socketsFD
     std::vector<bool> isClientFD; // consider switching it to map
-    pollfd *pollFDs;
+    pollfd *pollFDs; // struct that holds data about socketFD, its events and responses to it
     size_t lSockNum; // number of listening sockets
-    int poolTimeout;
+    int poolTimeout; // time interval for poll() checking for event
     size_t pollFDsNum; // number of structs corresponding total number of sockets
+    size_t bakclogNum; // number of pending connection that listen can hold
     // temporary
-    char buffer[1024]; 
-    int byteRecived;
+    char buffer[1024]; // data stream accapted by recv()
+    int byteRecived; // number of bytes accepted by recv()
 
 public:
     Webserver();
