@@ -23,7 +23,7 @@ void Webserver::recivNClose(size_t el)
 {
    // recived date is send to buffer, for now its strign
    byteRecived = recv(pollFDs[el].fd, &buffer, 1024, 0);
-   buffer[byteRecived] = '\0'; // -2 coz telnet send additional /r+/n while confirm
+   buffer[byteRecived] = '\0'; 
    if (byteRecived == -1)
    {
       std::cerr << "recv() failed: " << strerror(errno) << std::endl;
@@ -39,6 +39,7 @@ void Webserver::recivNClose(size_t el)
             break;
          pollFDs[i] = pollFDs[i + 1];
       }
+      // shirinking pollfd 
       pollFDs = (pollfd *)realloc(pollFDs, (pollFDsNum - 1) * sizeof(pollfd));
       pollFDsNum--;
    }
