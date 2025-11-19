@@ -103,7 +103,7 @@ void Webserver::tempLogic()
       }
       usleep(100000);
    }
-
+   
    close(socketFD[0]);
    close(socketFD[1]);
    // close clientFD
