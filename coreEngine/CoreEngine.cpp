@@ -1,7 +1,9 @@
-#include "Webserver.hpp"
+//Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
 
-Webserver::Webserver() : serv(NULL), pollFDs(NULL), lSockNum(0), poolTimeout(1000), 
-   pollFDsNum(0), bakclogNum(128)
+#include "CoreEngine.hpp"
+
+CoreEngine::CoreEngine(const std::vector<ServerConfig> &serversCfg) : serversCfg(serversCfg), serv(NULL), 
+   pollFDs(NULL), lSockNum(0), poolTimeout(1000), pollFDsNum(0), backlogNum(128)
 {
    memset(&clientSockaddr, 0, sizeof(sockaddr_in));
    memset(&hints, 0, sizeof(sockaddr_in));
@@ -10,7 +12,7 @@ Webserver::Webserver() : serv(NULL), pollFDs(NULL), lSockNum(0), poolTimeout(100
    hints.ai_flags = AI_PASSIVE;     // for server means NULL will accept connection from any adress
 }
 
-void Webserver::setSocket(size_t i)
+void CoreEngine::setSocket(size_t i)
 {
    // this is creation of listening sockets, pushing to vector
    socketFD.push_back(socket(serv->ai_family, SOCK_STREAM, 0)); // error check missing
@@ -36,40 +38,50 @@ void Webserver::setSocket(size_t i)
    fcntl(socketFD[i], F_SETFL, O_NONBLOCK);
    /*binding socket FD to IP+port stored in erv->ai_addr, similar FD <-> pipe end;
    casting to defoult struct sockaddr that can work with any kind of those structs*/
+   std::cout << "socketFD: " << socketFD[i] << std::endl;
    if (bind(socketFD[i], serv->ai_addr, serv->ai_addrlen) == -1)
    {
       std::cerr << "bind() failed: " << strerror(errno) << std::endl;
       exit(EXIT_FAILURE);
    }
    // last param for listen in number of connection allowed on the incoming queue
-   if (listen(socketFD[i], 2) == -1)
+   if (listen(socketFD[i], backlogNum) == -1)
    {
       std::cerr << "listen() failed: " << strerror(errno) << std::endl;
       exit(EXIT_FAILURE);
    }
 }
 
-void Webserver::tempLogic()
+void CoreEngine::coreEngine()
 {
    // this function will be adjusted to data provided after parsing config file
-   getaddrinfo(NULL, "8080", &hints, &serv);
-
-   size_t i = 0;
-   while (true)
+   
+   size_t j = 0;
+   // initializig listeling sockets by every config 
+   for(size_t i = 0; i < serversCfg.size(); i++)
    {
-      setSocket(i);
-      // creating a pararel vector to pollFD just to distiquish listening from client socket
-      isClientFD.push_back(false);
-      lSockNum++;
-      // realloc is nessesary due to dynamics changes to pollfd array, it holds all sockets events data 
-      pollFDs = (pollfd *)realloc(pollFDs, (lSockNum + 1) * sizeof(pollfd));
-      pollFDs[i].fd = socketFD[i];
-      pollFDs[i].events = POLLIN;
-      i++;
-      if (serv->ai_next == NULL)
-         break;
-      serv = serv->ai_next;
+      getaddrinfo(serversCfg[i].host.c_str(), serversCfg[i].listen_port.c_str(), &hints, &serv); 
+      std::cout << "server nr: " << i << std::endl;
+      addrinfo *res = serv;
+      while (true)
+      {
+         setSocket(j);
+         // creating a pararel vector to pollFD just to distiquish listening from client socket
+         isClientFD.push_back(false);
+         lSockNum++;
+         // realloc is nessesary due to dynamics changes to pollfd array, it holds all sockets events data 
+         pollFDs = (pollfd *)realloc(pollFDs, (lSockNum + 1) * sizeof(pollfd));
+         pollFDs[j].fd = socketFD[j];
+         pollFDs[j].events = POLLIN;
+         j++;
+         if (serv->ai_next == NULL)
+            break;
+         serv = serv->ai_next;
+      }
+      freeaddrinfo(res);
    }
+
+   std::cout << "number of listening sockets: " << lSockNum << std::endl;
 
    pollFDsNum = lSockNum;
    while (true)

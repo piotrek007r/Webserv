@@ -1,5 +1,7 @@
-#ifndef WEBSERVER_HPP
-#define WEBSERVER_HPP
+//Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
+
+#ifndef COREENGINE_HPP
+#define COREENGINE_HPP
 
 #include <arpa/inet.h> // inet_pton, inet_ntop DELETE if dont need
 #include <cerrno>      // defines errno
@@ -14,12 +16,15 @@
 #include <stdlib.h>     // for exit
 #include <sys/socket.h> // for sockets
 #include <unistd.h>     // for close read write
-#include <vector>      
+#include <vector>   
 
-class Webserver
+#include "../configReader/config.hpp"
+
+class CoreEngine
 {
 private:
     addrinfo hints; // base config of server
+    std::vector<ServerConfig> serversCfg; // list of object parsed cfgfiles
     addrinfo *serv; 
     sockaddr_storage clientSockaddr; // information about client
     std::vector<int> socketFD; // vector holding all socketsFD
@@ -28,18 +33,18 @@ private:
     size_t lSockNum; // number of listening sockets
     int poolTimeout; // time interval for poll() checking for event
     size_t pollFDsNum; // number of structs corresponding total number of sockets
-    size_t bakclogNum; // number of pending connection that listen can hold
+    size_t backlogNum; // number of pending connection that listen can hold
     // temporary
     char buffer[1024]; // data stream accapted by recv()
     int byteRecived; // number of bytes accepted by recv()
 
 public:
-    Webserver();
+    CoreEngine(const std::vector<ServerConfig> &serverCfg);
     void setSocket(size_t i);
     void setConnection(size_t i);
     void recivNClose(size_t i);
     void sendToClient(size_t i);
-    void tempLogic();
+    void coreEngine();
 };
 
 #endif

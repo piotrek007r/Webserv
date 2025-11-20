@@ -47,7 +47,7 @@ void Config::parseLines(std::ifstream& file) {
             inServer = true;
         }
         else if (key == "listen") {
-            int p; iss >> p; currentServer.listen_port = p;
+            std::string p; iss >> p; currentServer.listen_port = p;
         }
         else if (key == "server_name") {
             std::string sn; iss >> sn; currentServer.server_name = sn;
