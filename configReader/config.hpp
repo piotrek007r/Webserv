@@ -19,14 +19,18 @@ struct LocationConfig {
 };
 
 struct ServerConfig {
-    int listen_port;
+    std::string listen_port;
     std::string server_name;
     std::string host;
     std::string root;
     std::string index;
     std::map<int, std::string> error_pages;
     std::map<std::string, LocationConfig> locations;
-    ServerConfig() : listen_port(80), host("0.0.0.0") {}
+    ServerConfig() 
+    {
+        this->listen_port = "80", 
+        this->host = "0.0.0.0";
+    }
 };
 
 class Config {
@@ -37,6 +41,5 @@ private:
 
 public:
     Config(const std::string& filename);
-
     const std::vector<ServerConfig>& getServers() const;
 };

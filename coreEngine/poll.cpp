@@ -1,6 +1,8 @@
-#include "Webserver.hpp"
+//Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
 
-void Webserver::setConnection(size_t i)
+#include "CoreEngine.hpp"
+
+void CoreEngine::setConnection(size_t i)
 {
    socklen_t addrLen = sizeof(sockaddr_storage);
    int clientFD = accept(pollFDs[i].fd, (struct sockaddr *)&clientSockaddr, &addrLen);
@@ -19,11 +21,11 @@ void Webserver::setConnection(size_t i)
    std::cout << "socket: " << pollFDs[i].fd << " ready to connect" << std::endl;
 }
 
-void Webserver::recivNClose(size_t el)
+void CoreEngine::recivNClose(size_t el)
 {
    // recived date is send to buffer, for now its strign
    byteRecived = recv(pollFDs[el].fd, &buffer, 1024, 0);
-   buffer[byteRecived] = '\0'; // -2 coz telnet send additional /r+/n while confirm
+   buffer[byteRecived] = '\0'; 
    if (byteRecived == -1)
    {
       std::cerr << "recv() failed: " << strerror(errno) << std::endl;
@@ -39,6 +41,7 @@ void Webserver::recivNClose(size_t el)
             break;
          pollFDs[i] = pollFDs[i + 1];
       }
+      // shirinking pollfd 
       pollFDs = (pollfd *)realloc(pollFDs, (pollFDsNum - 1) * sizeof(pollfd));
       pollFDsNum--;
    }
@@ -50,7 +53,7 @@ void Webserver::recivNClose(size_t el)
    std::cout << buffer << std::endl; // print buffer
 }
 
-void Webserver::sendToClient(size_t el)
+void CoreEngine::sendToClient(size_t el)
 {
    std::string str = "Packet send sukcesfully!\n";
    int byteSend = send(pollFDs[el].fd, str.c_str(), str.size(), 0); // check if string functions are ok
