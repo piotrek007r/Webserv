@@ -13,19 +13,33 @@ int main(int argc, char **argv)
 {    
     if (argc == 2)
     {
-        std::string rawRequest = 
-          "GET /index.html HTTP/1.1\r\n"
-          "Host: localhost\r\n"
-          "Connection: keep-alive\r\n"
-          "\r\n";
-    
         try
         {
+            std::string rawRequest = 
+              "GET /index.html HTTP/1.1\r\n"
+              "Host: localhost\r\n"
+              "Connection: keep-alive\r\n"
+              "\r\n";
             std::string path = "configReader/conf/"; 
             std::string filePath = path + argv[1];
             Config config(filePath);
             const std::vector<ServerConfig> &servers = config.getServers();
             
+            HttpRequestParser parser;
+            try {
+                HttpRequestParser::HttpRequest request = parser.parse(rawRequest);
+                std::cout << "Method: " << request.method << "\n";
+                std::cout << "Path: " << request.path << "\n";
+                std::cout << "HTTP Version: " << request.httpVersion << "\n";
+    
+                // Zamiast range-based for używamy iteratorów
+                for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
+                    std::cout << it->first << ": " << it->second << "\n";
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "Error: " << e.what() << "\n";
+                return 1;
+            }
             // Potrzebujemy tego printa poniżej?
             std::cout << "Number ofCfd servers: " << servers.size() << std::endl;
             for (size_t i = 0; i < servers.size(); ++i)
@@ -67,19 +81,6 @@ int main(int argc, char **argv)
             std::cerr << "Config error: " << e.what() << std::endl;
             return 1;
         }
-            HttpRequestParser parser;
-        try {
-            HttpRequestParser::HttpRequest request = parser.parse(rawRequest);
-            std::cout << "Method: " << request.method << "\n";
-            std::cout << "Path: " << request.path << "\n";
-            std::cout << "HTTP Version: " << request.httpVersion << "\n";
-
-            // Zamiast range-based for używamy iteratorów
-            for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
-                std::cout << it->first << ": " << it->second << "\n";
-            }
-        } catch (const std::exception& e) {
-            std::cerr << "Error: " << e.what() << "\n";
     }
     else
     {
