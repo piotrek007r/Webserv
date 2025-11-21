@@ -1,6 +1,7 @@
 NAME = Webserv
 
 SRCS = main.cpp \
+		http/HttpRequestParser.cpp \
 		Webserver.cpp \
 		poll.cpp
 

@@ -1,4 +1,4 @@
-#include "HttpRequestParser.hpp"
+#include "http/HttpRequestParser.hpp"
 #include <iostream>
 
 int main() {
@@ -14,8 +14,10 @@ int main() {
         std::cout << "Method: " << request.method << "\n";
         std::cout << "Path: " << request.path << "\n";
         std::cout << "HTTP Version: " << request.httpVersion << "\n";
-        for (const auto& header : request.headers) {
-            std::cout << header.first << ": " << header.second << "\n";
+
+        // Zamiast range-based for używamy iteratorów
+        for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it) {
+            std::cout << it->first << ": " << it->second << "\n";
         }
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
