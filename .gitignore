@@ -32,3 +32,6 @@ test-results/
 *.gcda
 *.gcno
 *.gcov
+# Ignore VSCode settings folder
+.vscode/
+
