@@ -37,17 +37,20 @@ int main(int argc, char **argv)
 
         HttpRequestParser parser;
         try
-        {
+        {   bool keepAlive;
             HttpRequestParser::HttpRequest request = parser.parse(rawRequest);
             std::cout << "Method: " << request.method << "\n";
             std::cout << "Path: " << request.path << "\n";
             std::cout << "HTTP Version: " << request.httpVersion << "\n";
-
-            // Zamiast range-based for używamy iteratorów
             for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
             {
+                if (it->second == "keep-alive\r")
+                    keepAlive = true;
+                
                 std::cout << it->first << ": " << it->second << "\n";
             }
+            if(keepAlive)
+                std::cout << "utrzymujemy polaczenie bo mamy keep-alive\n" << std::endl;
         }
         catch (const std::exception &e)
         {
