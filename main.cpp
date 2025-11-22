@@ -4,7 +4,7 @@
 
 #include "coreEngine/CoreEngine.hpp"
 #include "configReader/config.hpp"
-#include "http/HttpRequestParser.hpp"
+#include "http/Http.hpp"
 #include <iostream>
 #include <stdio.h>
 // #include <sstream>
@@ -35,10 +35,9 @@ int main(int argc, char **argv)
         Config config(filePath);
         const std::vector<ServerConfig> &servers = config.getServers();
 
-        HttpRequestParser parser;
         try
         {   bool keepAlive;
-            HttpRequestParser::HttpRequest request = parser.parse(rawRequest);
+            Http::HttpRequest request = Http::parse(rawRequest);
             std::cout << "Method: " << request.method << "\n";
             std::cout << "Path: " << request.path << "\n";
             std::cout << "HTTP Version: " << request.httpVersion << "\n";

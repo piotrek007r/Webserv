@@ -46,19 +46,18 @@ std::string wordToLower(const std::string& str) {
 }
 
 // Funkcja pomocnicza do przetwarzania pobranego tokenu
-void getWords(const std::string& token, std::vector<std::string>& results) {
-    if (token.empty()) {
+void getWords(const std::string& inputToSplit, std::vector<std::string>& results, std::string words){
+    if (inputToSplit.empty()) {
         return;
     }
     std::string word;
-    // Znaki interpunkcyjne, które chcemy wydzielić
-    const std::string separators = ".,- *<>():;\"'!?";
-
-    for (char c : token) {
+    
+    for (std::string::const_iterator it = inputToSplit.begin(); it != inputToSplit.end(); ++it) {
+        char c = *it;
         // Używamy unsigned char, aby poprawnie obsługiwać znaki spoza ASCII
         if (std::isalnum(static_cast<unsigned char>(c))) {
             word += c;
-        } else if (separators.find(c) != std::string::npos) { // Poprawiony warunek
+        } else if (words.find(c) != std::string::npos) { // Poprawiony warunek
             if (!word.empty()) {
                 results.push_back(word);
                 word.clear();
