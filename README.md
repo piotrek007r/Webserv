@@ -1,5 +1,7 @@
 [config reader README.md](configReader/README.md)
 
+Proponuje ustalic ze dostosowujemy sie do przegladarki Chrome
+
 TO DO LIST:  
 [] dodac sprawdzanie max body size (socket layer)  
 [] cgi  
