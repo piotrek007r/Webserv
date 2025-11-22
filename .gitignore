@@ -2,7 +2,7 @@
 *.o
 *.out
 *.exe
-Webserv
+webserv
 
 # Ignore build directories
 /build/

@@ -1,7 +1,8 @@
-NAME = Webserv
+NAME = webserv
 
 SRCS = main.cpp \
 		http/HttpRequestParser.cpp \
+		http/HttpResponse.cpp \
 		coreEngine/CoreEngine.cpp \
 		coreEngine/poll.cpp \
 		configReader/config.cpp

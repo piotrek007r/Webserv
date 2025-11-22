@@ -45,6 +45,7 @@ public:
     void recivNClose(size_t i);
     void sendToClient(size_t i);
     void coreEngine();
+    std::string getBuffer();
 };
 
 #endif

@@ -1,6 +1,8 @@
 //Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
 
 #include "CoreEngine.hpp"
+#include "../http/HttpRequestParser.hpp"
+#include "../http/HttpResponse.hpp"
 
 void CoreEngine::setConnection(size_t i)
 {
@@ -51,6 +53,12 @@ void CoreEngine::recivNClose(size_t el)
       pollFDs[el].events = POLLIN | POLLOUT;
    }
    std::cout << buffer << std::endl; // print buffer
+   HttpRequestParser parser;
+   HttpRequestParser::HttpRequest request = parser.parse(buffer);
+   HttpResponse response(request, 200, "<html><body><h1>Hello, World!</h1></body></html>");
+   std::string responseStr = response.response();
+   send(pollFDs[el].fd, responseStr.c_str(), responseStr.size(), 0); // check if string functions are ok
+   
 }
 
 void CoreEngine::sendToClient(size_t el)

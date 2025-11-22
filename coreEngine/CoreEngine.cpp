@@ -52,6 +52,9 @@ void CoreEngine::setSocket(size_t i)
    }
 }
 
+    std::string CoreEngine::getBuffer() { return std::string(buffer); }
+
+
 void CoreEngine::coreEngine()
 {
    // this function will be adjusted to data provided after parsing config file
