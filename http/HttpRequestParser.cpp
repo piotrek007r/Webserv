@@ -20,8 +20,12 @@ void HttpRequestParser::parseHeaderLine(const std::string& line, HttpRequest& re
 
 HttpRequestParser::HttpRequest HttpRequestParser::parse(const std::string& rawRequest) {
     HttpRequest request;
+    if (rawRequest.empty()) {
+        throw std::invalid_argument("Empty HTTP request");
+    }
     std::istringstream stream(rawRequest);
     std::string line;
+
 
     // Parse the request line
     if (!std::getline(stream, line) || line.empty()) {
