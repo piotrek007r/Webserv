@@ -55,17 +55,11 @@ void Config::parseLines(std::ifstream& file) {
         else if (key == "host") {
             std::string h; iss >> h; currentServer.host = h;
         }
-        else if (key == "root" && !inLocation) {
-            std::string r; iss >> r; currentServer.root = r;
-        }
-        else if (key == "index" && !inLocation) {
-            std::string idx; iss >> idx; currentServer.index = idx;
-        }
         else if (key == "error_page") {
             int code; std::string val; iss >> code >> val;
             currentServer.error_pages[code] = val;
         }
-        else if (key == "location") {
+        else if (key == "route") {
             if (inLocation)
                 currentServer.locations[currentLocationPath] = currentLocation;
             iss >> currentLocationPath;
@@ -73,7 +67,7 @@ void Config::parseLines(std::ifstream& file) {
             inLocation = true;
         }
         else if (inLocation) {
-            if (key == "allow_methods") {
+            if (key == "methods") {
                 currentLocation.allow_methods.clear();
                 std::string m;
                 while (iss >> m)
@@ -87,9 +81,9 @@ void Config::parseLines(std::ifstream& file) {
                 std::string idx; iss >> idx;
                 currentLocation.index = idx;
             }
-            else if (key == "return") {
+            else if (key == "redirect") {
                 std::string ret; iss >> ret;
-                currentLocation.return_path = ret;
+                currentLocation.redirect = ret;
             
             }
             else if (key == "upload") {
@@ -97,16 +91,12 @@ void Config::parseLines(std::ifstream& file) {
                 currentLocation.upload_dir = upload_dir;
             }
             else if (key == "cgi_path") {
-                currentLocation.cgi_path.clear();
-                std::string p;
-                while (iss >> p)
-                    currentLocation.cgi_path.push_back(p);
+                std::string cgi_path; iss >> cgi_path;
+                currentLocation.cgi_path = cgi_path;
             }
             else if (key == "cgi_ext") {
-                currentLocation.cgi_ext.clear();
-                std::string ext;
-                while (iss >> ext)
-                    currentLocation.cgi_ext.push_back(ext);
+                std::string cgi_ext; iss >> cgi_ext;
+                currentLocation.cgi_ext = cgi_ext;
             }
             else if (key == "root") {
                 std::string r; iss >> r;

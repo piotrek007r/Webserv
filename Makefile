@@ -5,7 +5,8 @@ SRCS = main.cpp \
 		coreEngine/CoreEngine.cpp \
 		coreEngine/poll.cpp \
 		http/stringUtils.cpp \
-		configReader/config.cpp
+		configReader/config.cpp \
+		configReader/printConfig.cpp
 
 
 OBJS = ${SRCS:.cpp=.o}
