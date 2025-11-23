@@ -1,66 +1,99 @@
 // Copyright [2025] <Antoni Gorski> <agorski@student.42warsaw.pl>
 // Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
+// Copyright [2025] <Grzegorz Buczynski> <gbuczyns@student.42warsaw.pl>
 
 #include "coreEngine/CoreEngine.hpp"
 #include "configReader/config.hpp"
+#include "http/Http.hpp"
+#include <iostream>
+#include <stdio.h>
 // #include <sstream>
 
 int main(int argc, char **argv)
 {
-    if (argc == 2)
-    {
-        try
-        {
-            std::string path = "configReader/conf/"; 
-            std::string filePath = path + argv[1];
-            Config config(filePath);
-            const std::vector<ServerConfig> &servers = config.getServers();
-            
-            // Potrzebujemy tego printa poniżej?
-            std::cout << "Number ofCfd servers: " << servers.size() << std::endl;
-            for (size_t i = 0; i < servers.size(); ++i)
-            {
-                const ServerConfig &srv = servers[i];
-                std::cout << "\nServer #" << i + 1 << std::endl;
-                std::cout << "  listen_port: " << srv.listen_port << std::endl;
-                std::cout << "  server_name: " << srv.server_name << std::endl;
-                std::cout << "  host: " << srv.host << std::endl;
-                std::cout << "  root: " << srv.root << std::endl;
-                std::cout << "  index: " << srv.index << std::endl;
-                std::cout << "  error_pages: ";
-                for (std::map<int, std::string>::const_iterator it = srv.error_pages.begin(); it != srv.error_pages.end(); ++it)
-                    std::cout << it->first << "->" << it->second << " ";
-                std::cout << std::endl;
-
-                std::cout << "  Locations/routes: " << srv.locations.size() << std::endl;
-                for (std::map<std::string, LocationConfig>::const_iterator loc = srv.locations.begin(); loc != srv.locations.end(); ++loc)
-                {
-                    std::cout << "    Path: " << loc->first << std::endl;
-                    const LocationConfig &lc = loc->second;
-                    std::cout << "      allow_methods: ";
-                    for (size_t j = 0; j < lc.allow_methods.size(); ++j)
-                        std::cout << lc.allow_methods[j] << " ";
-                    std::cout << std::endl;
-                    std::cout << "      autoindex: " << (lc.autoindex ? "on" : "off") << std::endl;
-                    std::cout << "      index: " << lc.index << std::endl;
-                    std::cout << "      return_path: " << lc.return_path << std::endl;
-                    std::cout << "      upload_dir: " << lc.upload_dir << std::endl;
-                    std::cout << "      root: " << lc.root << std::endl;
-                }
-            }
-            CoreEngine CoreEngine(servers);
-            CoreEngine.coreEngine();
-
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Config error: " << e.what() << std::endl;
-            return 1;
-        }
-    }
+    std::string filePath;
+    std::string path = "configReader/conf/";
+    if (argc == 1)
+        filePath = "configReader/conf/default.conf";
+    else if (argc == 2)
+    filePath = path + argv[1];
     else
     {
         std::cerr << "Invalid number of arguments" << std::endl;
+        return 1;
+    }
+    try
+    {
+        if (access(filePath.c_str(), F_OK) == -1)
+            return perror("Can't open config file"), 1;
+        std::string rawRequest =
+            "GET /index.html HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Connection: keep-alive\r\n"
+            "\r\n";
+
+        Config config(filePath);
+        const std::vector<ServerConfig> &servers = config.getServers();
+
+        try
+        {   bool keepAlive;
+            Http::HttpRequest request = Http::parse(rawRequest);
+            std::cout << "Method: " << request.method << "\n";
+            std::cout << "Path: " << request.path << "\n";
+            std::cout << "HTTP Version: " << request.httpVersion << "\n";
+            for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
+            {
+                if (it->second == "keep-alive\r")
+                    keepAlive = true;
+                
+                std::cout << it->first << ": " << it->second << "\n";
+            }
+            if(keepAlive)
+                std::cout << "utrzymujemy polaczenie bo mamy keep-alive\n" << std::endl;
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error: " << e.what() << "\n";
+            return 1;
+        }
+        // Potrzebujemy tego printa poniżej?
+        std::cout << "Number ofCfd servers: " << servers.size() << std::endl;
+        for (size_t i = 0; i < servers.size(); ++i)
+        {
+            const ServerConfig &srv = servers[i];
+            std::cout << "\nServer #" << i + 1 << std::endl;
+            std::cout << "  listen_port: " << srv.listen_port << std::endl;
+            std::cout << "  server_name: " << srv.server_name << std::endl;
+            std::cout << "  host: " << srv.host << std::endl;
+            std::cout << "  root: " << srv.root << std::endl;
+            std::cout << "  index: " << srv.index << std::endl;
+            std::cout << "  error_pages: ";
+            for (std::map<int, std::string>::const_iterator it = srv.error_pages.begin(); it != srv.error_pages.end(); ++it)
+                std::cout << it->first << "->" << it->second << " ";
+            std::cout << std::endl;
+
+            std::cout << "  Locations/routes: " << srv.locations.size() << std::endl;
+            for (std::map<std::string, LocationConfig>::const_iterator loc = srv.locations.begin(); loc != srv.locations.end(); ++loc)
+            {
+                std::cout << "    Path: " << loc->first << std::endl;
+                const LocationConfig &lc = loc->second;
+                std::cout << "      allow_methods: ";
+                for (size_t j = 0; j < lc.allow_methods.size(); ++j)
+                    std::cout << lc.allow_methods[j] << " ";
+                std::cout << std::endl;
+                std::cout << "      autoindex: " << (lc.autoindex ? "on" : "off") << std::endl;
+                std::cout << "      index: " << lc.index << std::endl;
+                std::cout << "      return_path: " << lc.return_path << std::endl;
+                std::cout << "      upload_dir: " << lc.upload_dir << std::endl;
+                std::cout << "      root: " << lc.root << std::endl;
+            }
+        }
+        CoreEngine CoreEngine(servers);
+        CoreEngine.coreEngine();
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Config error: " << e.what() << std::endl;
         return 1;
     }
 
