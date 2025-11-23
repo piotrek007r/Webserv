@@ -1,11 +1,11 @@
 [config reader README.md](configReader/README.md)
 
-Proponuje ustalic ze dostosowujemy sie do przegladarki Chrome
+Propose to standardize for Chrome browser compatibility
 
 TO DO LIST:  
-[] dodac sprawdzanie max body size (socket layer)  
-[] cgi  
-[] http response bilder  
-[] strony http + skrypt .py  
-[] hi level logic (router)  
-[] zamykanie socketow  
+- [ ] Add max body size validation (socket layer)
+- [ ] CGI
+- [ ] HTTP response builder
+- [ ] HTTP pages + .py script
+- [ ] High-level logic (router)
+- [ ] Closing sockets  
