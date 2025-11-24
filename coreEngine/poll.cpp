@@ -50,6 +50,8 @@ void CoreEngine::recivNClose(size_t el)
    {
       // response to HTTP reqest
       pollFDs[el].events = POLLIN | POLLOUT;
+
+
    }
    std::cout << buffer << std::endl; // print buffer
    std::string requestStr(buffer);

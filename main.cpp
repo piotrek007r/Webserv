@@ -6,7 +6,8 @@
 #include "configReader/config.hpp"
 #include "http/Http.hpp"
 #include <iostream>
-#include <stdio.h>
+#include <cerrno>
+#include <cstring>
 // #include <sstream>
 
 int main(int argc, char **argv)
@@ -25,7 +26,10 @@ int main(int argc, char **argv)
     try
     {
         if (access(filePath.c_str(), F_OK) == -1)
-            return perror("Can't open config file"), 1;
+        {
+            std::cerr << "Can't open config file: " << std::strerror(errno) << std::endl;
+            return 1;
+        }
         std::string rawRequest =
             "GET /index.html HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -43,13 +47,13 @@ int main(int argc, char **argv)
             std::cout << "HTTP Version: " << request.httpVersion << "\n";
             for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
             {
-                if (it->second == "keep-alive\r")
+                if (it->second == "keep-alive")
                     keepAlive = true;
                 
                 std::cout << it->first << ": " << it->second << "\n";
             }
             if(keepAlive)
-                std::cout << "utrzymujemy polaczenie bo mamy keep-alive\n" << std::endl;
+                std::cout << "Keeping connection alive due to keep-alive header\n" << std::endl;
         }
         catch (const std::exception &e)
         {
@@ -57,37 +61,9 @@ int main(int argc, char **argv)
             return 1;
         }
         // Potrzebujemy tego printa poniżej?
-        std::cout << "Number ofCfd servers: " << servers.size() << std::endl;
-        for (size_t i = 0; i < servers.size(); ++i)
-        {
-            const ServerConfig &srv = servers[i];
-            std::cout << "\nServer #" << i + 1 << std::endl;
-            std::cout << "  listen_port: " << srv.listen_port << std::endl;
-            std::cout << "  server_name: " << srv.server_name << std::endl;
-            std::cout << "  host: " << srv.host << std::endl;
-            std::cout << "  root: " << srv.root << std::endl;
-            std::cout << "  index: " << srv.index << std::endl;
-            std::cout << "  error_pages: ";
-            for (std::map<int, std::string>::const_iterator it = srv.error_pages.begin(); it != srv.error_pages.end(); ++it)
-                std::cout << it->first << "->" << it->second << " ";
-            std::cout << std::endl;
+        
+        config.printConfigs(); // Test print function
 
-            std::cout << "  Locations/routes: " << srv.locations.size() << std::endl;
-            for (std::map<std::string, LocationConfig>::const_iterator loc = srv.locations.begin(); loc != srv.locations.end(); ++loc)
-            {
-                std::cout << "    Path: " << loc->first << std::endl;
-                const LocationConfig &lc = loc->second;
-                std::cout << "      allow_methods: ";
-                for (size_t j = 0; j < lc.allow_methods.size(); ++j)
-                    std::cout << lc.allow_methods[j] << " ";
-                std::cout << std::endl;
-                std::cout << "      autoindex: " << (lc.autoindex ? "on" : "off") << std::endl;
-                std::cout << "      index: " << lc.index << std::endl;
-                std::cout << "      return_path: " << lc.return_path << std::endl;
-                std::cout << "      upload_dir: " << lc.upload_dir << std::endl;
-                std::cout << "      root: " << lc.root << std::endl;
-            }
-        }
         CoreEngine CoreEngine(servers);
         CoreEngine.coreEngine();
     }
