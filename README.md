@@ -1,5 +1,6 @@
 [config reader README.md](configReader/README.md)
 [core engine README.md](coreEngine/README.md)
+[CGI module README.md](cgi/README.md)
 
 #Propose to standardize for Chrome browser compatibility
 
