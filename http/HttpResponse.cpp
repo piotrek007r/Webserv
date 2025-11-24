@@ -9,7 +9,6 @@ HttpResponse::HttpResponse(HttpRequestParser::HttpRequest &request, int statusCo
     
     this->httpVersion = request.httpVersion;
     this->body = body;
-    this->headers = headers;
 }
 std::string HttpResponse::response() {
     std::string headersCombined;
@@ -20,5 +19,5 @@ std::string HttpResponse::response() {
     this->headers.push_back("Content-Type: text/html");
     for (std::vector<std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
         headersCombined += *it + "\r\n";
-    return httpVersion + " " + statusCode + "\r\n" + headersCombined + "\r\n\r\n" + body;
+    return httpVersion + " " + statusCode + "\r\n" + headersCombined + "\r\n" + body;
 }
