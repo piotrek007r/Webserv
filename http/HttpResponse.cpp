@@ -10,7 +10,6 @@ HttpResponse::HttpResponse(HttpRequestParser::HttpRequest &request, int statusCo
     
     this->httpVersion = request.httpVersion;
     this->body = body;
-    this->headers = headers;
 }
 std::string HttpResponse::response() {
     std::string headersCombined;

@@ -6,7 +6,8 @@
 #include "configReader/config.hpp"
 #include "http/HttpRequestParser.hpp"
 #include <iostream>
-#include <stdio.h>
+#include <cerrno>
+#include <cstring>
 // #include <sstream>
 
 int main(int argc, char **argv)
@@ -25,7 +26,10 @@ int main(int argc, char **argv)
     try
     {
         if (access(filePath.c_str(), F_OK) == -1)
-            return perror("Can't open config file"), 1;
+        {
+            std::cerr << "Can't open config file: " << std::strerror(errno) << std::endl;
+            return 1;
+        }
         std::string rawRequest =
             "GET /index.html HTTP/1.1\r\n"
             "Host: localhost\r\n"
@@ -50,7 +54,7 @@ int main(int argc, char **argv)
                 std::cout << it->first << ": " << it->second << "\n";
             }
             if(keepAlive)
-                std::cout << "utrzymujemy polaczenie bo mamy keep-alive\n" << std::endl;
+                std::cout << "Keeping connection alive due to keep-alive header\n" << std::endl;
         }
         catch (const std::exception &e)
         {
