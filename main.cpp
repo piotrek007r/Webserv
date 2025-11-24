@@ -44,7 +44,7 @@ int main(int argc, char **argv)
             std::cout << "HTTP Version: " << request.httpVersion << "\n";
             for (std::map<std::string, std::string>::const_iterator it = request.headers.begin(); it != request.headers.end(); ++it)
             {
-                if (it->second == "keep-alive\r")
+                if (it->second == "keep-alive")
                     keepAlive = true;
                 
                 std::cout << it->first << ": " << it->second << "\n";
