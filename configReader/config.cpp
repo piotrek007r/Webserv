@@ -81,11 +81,6 @@ void Config::parseLines(std::ifstream& file) {
                 std::string idx; iss >> idx;
                 currentLocation.index = idx;
             }
-            else if (key == "redirect") {
-                std::string ret; iss >> ret;
-                currentLocation.redirect = ret;
-            
-            }
             else if (key == "upload") {
                 std::string upload_dir; iss >> upload_dir;
                 currentLocation.upload_dir = upload_dir;
