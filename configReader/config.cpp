@@ -73,7 +73,7 @@ void Config::parseLines(std::ifstream& file) {
                 while (iss >> m)
                     currentLocation.allow_methods.push_back(m);
             }
-            else if (key == "autoindex") {
+            else if (key == "directory_listing") {
                 std::string val; iss >> val;
                 currentLocation.autoindex = (val == "on");
             }
