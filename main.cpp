@@ -50,7 +50,7 @@ int main(int argc, char **argv)
                 std::cout << it->first << ": " << it->second << "\n";
             }
             if(keepAlive)
-                std::cout << "utrzymujemy polaczenie bo mamy keep-alive\n" << std::endl;
+                std::cout << "Keeping connection alive due to keep-alive header\n" << std::endl;
         }
         catch (const std::exception &e)
         {
