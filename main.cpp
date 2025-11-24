@@ -7,6 +7,7 @@
 #include "http/HttpRequestParser.hpp"
 #include <iostream>
 #include <stdio.h>
+#include <unistd.h>
 // #include <sstream>
 
 int main(int argc, char **argv)
