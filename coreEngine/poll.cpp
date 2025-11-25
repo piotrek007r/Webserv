@@ -1,4 +1,4 @@
-//Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
+// Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
 
 #include "CoreEngine.hpp"
 #include "../http/Http.hpp"
@@ -25,12 +25,12 @@ void CoreEngine::setConnection(size_t i)
 void CoreEngine::recivNClose(size_t el)
 {
    // recived date is send to buffer, for now its strign
-   byteRecived = recv(pollFDs[el].fd, &buffer, 1024, 0);
-   buffer[byteRecived] = '\0'; 
+   byteRecived = recv(pollFDs[el].fd, buffer, 1024, 0);
+   buffer[byteRecived] = '\0';
    if (byteRecived == -1)
    {
       std::cerr << "recv() failed: " << strerror(errno) << std::endl;
-      exit(1);
+      return;
    }
    // this is closing socket logic, when send EOF by client EOF
    else if (byteRecived == 0)
@@ -42,33 +42,29 @@ void CoreEngine::recivNClose(size_t el)
             break;
          pollFDs[i] = pollFDs[i + 1];
       }
-      // shirinking pollfd 
+      // shirinking pollfd
       pollFDs = (pollfd *)realloc(pollFDs, (pollFDsNum - 1) * sizeof(pollfd));
       pollFDsNum--;
    }
    else
    {
       // response to HTTP reqest
-      pollFDs[el].events = POLLIN | POLLOUT;
-
-
+      std::cout << "--->buffer: " << buffer << std::endl; // print buffer
+      pollFDs[el].events = POLLOUT;
    }
-   std::cout << buffer << std::endl; // print buffer
-   std::string requestStr(buffer);
-   Http response(requestStr);
-   std::string responseStr = response.response();
-   send(pollFDs[el].fd, responseStr.c_str(), responseStr.size(), 0); // check if string functions are ok
-   
 }
 
 void CoreEngine::sendToClient(size_t el)
 {
+   std::string requestStr(buffer);
+   Http response(requestStr);
+   std::string responseStr = response.response();
    std::string str = "Packet send sukcesfully!\n";
-   int byteSend = send(pollFDs[el].fd, str.c_str(), str.size(), 0); // check if string functions are ok
+   int byteSend = send(pollFDs[el].fd, responseStr.c_str(), responseStr.size(), 0); // check if string functions are ok
    if (byteSend == -1)
    {
       std::cerr << "send() failed: " << strerror(errno) << std::endl;
-      exit(1);
+      return;
    }
    pollFDs[el].events = POLLIN;
    // std::cout << "client: " << pollFDs[el].fd << " ready to send" << std::endl;
