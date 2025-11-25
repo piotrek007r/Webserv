@@ -6,7 +6,7 @@
 /*   By: agorski <agorski@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/24 13:33:44 by agorski           #+#    #+#             */
-/*   Updated: 2025/11/24 17:36:43 by agorski          ###   ########.fr       */
+/*   Updated: 2025/11/25 14:52:05 by agorski          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ std::string executeCgi(const std::string& scriptPath,
         // set environment variables
         for (std::map<std::string, std::string>::iterator it = envVars.begin(); it != envVars.end(); ++it)
         {
-            setenv(it->first.c_str(), it->second.c_str(), 1);
+            setenv(it->first.c_str(), it->second.c_str(), 1); //wedlug pawla nie moge
         }
 
         // Execute CGI interpreter
