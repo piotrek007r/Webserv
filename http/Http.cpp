@@ -103,5 +103,5 @@ std::string Http::response() {
     this->headers.push_back("Content-Type: text/html");
     for (std::vector<std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
         headersCombined += *it + "\r\n";
-    return httpVersion + " " + statusCode + "\r\n" + headersCombined + "\r\n\r\n" + body;
+    return httpVersion + " " + statusCode + "\r\n" + headersCombined + "\r\n" + body;
 }
