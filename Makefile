@@ -4,6 +4,7 @@ SRCS = main.cpp \
 		http/Http.cpp \
 		coreEngine/CoreEngine.cpp \
 		coreEngine/poll.cpp \
+		coreEngine/utils.cpp \
 		http/stringUtils.cpp \
 		configReader/config.cpp \
 		configReader/printConfig.cpp \

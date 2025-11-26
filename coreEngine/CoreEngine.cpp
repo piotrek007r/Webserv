@@ -5,7 +5,6 @@
 CoreEngine::CoreEngine(const std::vector<ServerConfig> &serversCfg) : serversCfg(serversCfg), serv(NULL), 
    pollFDs(NULL), lSockNum(0), poolTimeout(1000), pollFDsNum(0), backlogNum(128)
 {
-   memset(&clientSockaddr, 0, sizeof(sockaddr_in));
    memset(&hints, 0, sizeof(sockaddr_in));
    hints.ai_family = AF_UNSPEC;     // for both IP4 & IP6
    hints.ai_socktype = SOCK_STREAM; // TCP
@@ -52,7 +51,7 @@ void CoreEngine::setSocket(size_t i)
    }
 }
 
-    std::string CoreEngine::getBuffer() { return std::string(buffer); }
+   //  std::string CoreEngine::getBuffer() { return std::string(buffer); }
 
 
 void CoreEngine::coreEngine()

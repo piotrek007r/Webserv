@@ -1,4 +1,4 @@
-//Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
+// Copyright [2025] <Piotr Ruszkiewicz> <pruszkie@student.42warsaw.pl>
 
 #ifndef COREENGINE_HPP
 #define COREENGINE_HPP
@@ -11,41 +11,51 @@
 #include <netinet/in.h> // struct sockaddr_in, struct in_addr
 #include <netdb.h>      // for getaddrinfo and addrinfo
 #include <poll.h>       // for poolfd
-#include <string>   
-#include <stdint.h>     
+#include <string>
+#include <stdint.h>
 #include <stdlib.h>     // for exit
 #include <sys/socket.h> // for sockets
 #include <unistd.h>     // for close read write
-#include <vector>   
+#include <vector>
+#include <sstream>
 
 #include "../configReader/config.hpp"
 
 class CoreEngine
 {
-private:
-    addrinfo hints; // base config of server
-    std::vector<ServerConfig> serversCfg; // list of object parsed cfgfiles
-    addrinfo *serv; 
-    sockaddr_storage clientSockaddr; // information about client
-    std::vector<int> socketFD; // vector holding all socketsFD
-    std::vector<bool> isClientFD; // consider switching it to map
-    pollfd *pollFDs; // struct that holds data about socketFD, its events and responses to it
-    size_t lSockNum; // number of listening sockets
-    int poolTimeout; // time interval for poll() checking for event
-    size_t pollFDsNum; // number of structs corresponding total number of sockets
-    size_t backlogNum; // number of pending connection that listen can hold
-    // temporary
-    char buffer[1024]; // data stream accapted by recv()
-    int byteRecived; // number of bytes accepted by recv()
+    private:
+        struct client
+        {
+            sockaddr_storage clientSockaddr;
+            char buffer[1024];
+            int byteRecived;
+            int FD;
+        }; // it could go to base object.
+        client& getClientByFD(int socketFD);  
+        addrinfo hints;                       // base config of server
+        std::vector<ServerConfig> serversCfg; // list of object parsed cfgfiles
+        addrinfo *serv;
+        // sockaddr_storage clientSockaddr; // information about client <- DELETE
+        std::vector<int> socketFD;       // vector holding all socketsFD 
+        std::vector<bool> isClientFD;    // consider switching it to map
+        std::vector<client> clientVec;
+        pollfd *pollFDs;   // struct that holds data about socketFD, its events and responses to it
+        size_t lSockNum;   // number of listening sockets
+        int poolTimeout;   // time interval for poll() checking for event
+        size_t pollFDsNum; // number of structs corresponding total number of sockets
+        size_t backlogNum; // number of pending connection that listen can hold
+        // temporary
+        // char buffer[1024]; // data stream accapted by recv() <- DELETE
+        // int byteRecived;   // number of bytes accepted by recv() <- DELETE
 
-public:
-    CoreEngine(const std::vector<ServerConfig> &serverCfg);
-    void setSocket(size_t i);
-    void setConnection(size_t i);
-    void recivNClose(size_t i);
-    void sendToClient(size_t i);
-    void coreEngine();
-    std::string getBuffer();
+    public:
+        CoreEngine(const std::vector<ServerConfig> &serverCfg);
+        void setSocket(size_t i);
+        void setConnection(size_t i);
+        void recivNClose(size_t i);
+        void sendToClient(size_t i);
+        void coreEngine();
+        // std::string getBuffer();
 };
 
 #endif
