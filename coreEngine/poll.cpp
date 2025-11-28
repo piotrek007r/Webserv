@@ -8,8 +8,8 @@ void CoreEngine::setConnection(size_t i)
    socklen_t addrLen = sizeof(sockaddr_storage);
    client client;
    memset(&client.clientSockaddr, 0, sizeof(sockaddr_in));
+   client.serverCfg = serversCfg[i];
 
-   clientVec.push_back(client);
    client.FD = accept(pollFDs[i].fd, (struct sockaddr *)&client.clientSockaddr, &addrLen);
    if (client.FD == -1)
    {

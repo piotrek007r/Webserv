@@ -27,6 +27,7 @@ class CoreEngine
         struct client
         {
             sockaddr_storage clientSockaddr;
+            ServerConfig serverCfg;
             char buffer[1024];
             int byteRecived;
             int FD;
@@ -35,7 +36,6 @@ class CoreEngine
         addrinfo hints;                       // base config of server
         std::vector<ServerConfig> serversCfg; // list of object parsed cfgfiles
         addrinfo *serv;
-        // sockaddr_storage clientSockaddr; // information about client <- DELETE
         std::vector<int> socketFD;       // vector holding all socketsFD 
         std::vector<bool> isClientFD;    // consider switching it to map
         std::vector<client> clientVec;
@@ -44,9 +44,6 @@ class CoreEngine
         int poolTimeout;   // time interval for poll() checking for event
         size_t pollFDsNum; // number of structs corresponding total number of sockets
         size_t backlogNum; // number of pending connection that listen can hold
-        // temporary
-        // char buffer[1024]; // data stream accapted by recv() <- DELETE
-        // int byteRecived;   // number of bytes accepted by recv() <- DELETE
 
     public:
         CoreEngine(const std::vector<ServerConfig> &serverCfg);
