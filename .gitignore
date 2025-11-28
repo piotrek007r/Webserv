@@ -1,0 +1,43 @@
+# Ignore object files and compiled binaries
+*.o
+*.out
+*.exe
+webserv
+
+# Ignore build directories
+/build/
+
+# Ignore temporary files
+*.tmp
+*.log
+*.swp
+*.swo
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore Makefile artifacts
+Makefile~
+
+# Ignore backup files
+*~
+
+# Ignore version control metadata
+.vscode/
+.idea/
+
+# Ignore test artifacts
+test-results/
+*.gcda
+*.gcno
+*.gcov
+# Ignore VSCode settings folder
+.vscode/
+
+# Ignore CodeQL artifacts
+_codeql_detected_source_root
+
+# Ignore NFS temporary files
+.nfs*
+

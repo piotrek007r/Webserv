@@ -1,8 +1,15 @@
-NAME = Webserv
+NAME = webserv
 
 SRCS = main.cpp \
-		Webserver.cpp \
-		poll.cpp
+		http/Http.cpp \
+		coreEngine/CoreEngine.cpp \
+		coreEngine/poll.cpp \
+		coreEngine/utils.cpp \
+		http/stringUtils.cpp \
+		configReader/config.cpp \
+		configReader/printConfig.cpp \
+		utils/utils.cpp
+
 
 OBJS = ${SRCS:.cpp=.o}
 
